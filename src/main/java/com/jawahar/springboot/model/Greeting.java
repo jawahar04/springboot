@@ -1,19 +1,28 @@
 package com.jawahar.springboot.model;
 
-import java.math.BigInteger;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+
+@Entity
 public class Greeting {
-	private BigInteger id;
+	@Id
+	@GeneratedValue
+	private Long id;
+	
+	//@Column(name = "greeting_text")
 	private String greetingText;
 	
 	public Greeting() {
 		
 	}
 	
-	public BigInteger getId() {
+	public Long getId() {
 		return id;
 	}
-	public void setId(BigInteger id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 	public String getGreetingText() {

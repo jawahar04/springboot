@@ -1,80 +1,116 @@
 package com.jawahar.springboot.service;
 
-import java.math.BigInteger;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.management.RuntimeErrorException;
+
+import org.hibernate.type.TrueFalseType;
+
+//import javax.transaction.Transactional;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.jawahar.springboot.model.Greeting;
+import com.jawahar.springboot.repository.GreetingRepository;
 
 @Service
+@Transactional(propagation=Propagation.SUPPORTS, readOnly = true)
 public class GreetingServiceBean implements GreetingsService {
 	
-	private static BigInteger nextId;
-	private static Map<BigInteger, Greeting> greetingMap;
+//	private static Long nextId;
+//	private static Map<Long, Greeting> greetingMap;
+//	
+//	private static Greeting save(Greeting greeting) {
+//		if (greetingMap == null) {
+//			greetingMap = new HashMap<>();
+//			nextId = 1L;
+//			
+//		}
+//		if (greeting.getId() != null) {
+//			
+//			Greeting g = greetingMap.get(greeting.getId());
+//			if (g == null) {
+//				System.out.println("In update greeting is null: ");
+//				return null;
+//			}
+//			g.setGreetingText(greeting.getGreetingText());
+//			greetingMap.put(g.getId(), g);
+//			System.out.println("In update returning: " + g.getId() + " : " + g.getGreetingText());
+//			return g;
+//		}
+//		else {
+//			greeting.setId(nextId);
+//			nextId = nextId + 1;
+//			greetingMap.put(greeting.getId(), greeting);
+//			return greeting;
+//		}
+//	}
+//	static {
+//		Greeting g1 = new Greeting();
+//		g1.setGreetingText("Hello World");
+//		save(g1);
+//		
+//		Greeting g2 = new Greeting();
+//		g2.setGreetingText("Hola! World");
+//		save(g2);		
+//		
+//	}
+
+	@Autowired
+	private GreetingRepository greetingRepository;
 	
-	private static Greeting save(Greeting greeting) {
-		if (greetingMap == null) {
-			greetingMap = new HashMap<>();
-			nextId = BigInteger.ONE;
-			
-		}
+	
+	@Override
+	public Collection<Greeting> findAll() {
+		return greetingRepository.findAll();
+	}
+
+	@Override
+	public Greeting findOne(Long id) {
+		return greetingRepository.findOne(id);
+	}
+
+	@Override
+	@Transactional(propagation=Propagation.REQUIRES_NEW, readOnly = false)
+	public Greeting create(Greeting greeting) {
 		if (greeting.getId() != null) {
-			Greeting g = greetingMap.get(greeting.getId());
-			if (g == null) {
-				return null;
-			}
-			g.setGreetingText(greeting.getGreetingText());
-			greetingMap.put(g.getId(), g);
-			return g;
+			System.out.println("Create has to be called with null id");
+			return null;
 		}
-		else {
-			greeting.setId(nextId);
-			nextId = nextId.add(BigInteger.ONE);
-			greetingMap.put(greeting.getId(), greeting);
-			return greeting;
+		
+		Greeting g = greetingRepository.save(greeting);
+		if (g.getId() == 4L) {
+			throw new RuntimeException("Testing rollback");
 		}
+		return g;
 	}
-	static {
-		Greeting g1 = new Greeting();
-		g1.setGreetingText("Hello World");
-		save(g1);
+
+	@Override
+	@Transactional(propagation=Propagation.REQUIRES_NEW, readOnly = false)
+	public Greeting update(Greeting greeting) {
+		if (greeting.getId() == null) {
+			System.out.println("Update has to be called with non-null id");
+			return null;
+		}
 		
-		Greeting g2 = new Greeting();
-		g2.setGreetingText("Hola! World");
-		save(g2);		
+		Greeting greetingPersisted = greetingRepository.findOne(greeting.getId());
+		if (greetingPersisted == null) {
+			System.out.println("Update called with a non-existent greeting: " + greeting.getId());
+			return null;
+		}
 		
+		return greetingRepository.save(greeting);
 	}
 
 	@Override
-	public Collection<Greeting> getAllGreetings() {
-		return greetingMap.values();
+	public void delete(Long id) {
+		greetingRepository.delete(id);
 	}
-
-	@Override
-	public Greeting getGreeting(BigInteger id) {
-		return greetingMap.get(id);
-	}
-
-	@Override
-	public Greeting createGreeting(Greeting greeting) {
-		save(greeting);
-		return greeting;
-	}
-
-	@Override
-	public Greeting updateGreeting(Greeting greeting) {
-		save(greeting);
-		return greeting;
-	}
-
-	@Override
-	public Greeting deleteGreeting(BigInteger id) {
-		Greeting greeting = greetingMap.get(id);
-		boolean b =  greetingMap.remove(id);
-		return greeting;
-	}
+	
 
 }

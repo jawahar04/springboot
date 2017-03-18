@@ -1,12 +1,8 @@
 package com.jawahar.springboot.controllers;
 
-import java.math.BigInteger;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.web.HttpEncodingAutoConfiguration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -62,13 +58,13 @@ public class GreetingController {
 	@RequestMapping(value = "/api/greetings", method = RequestMethod.GET)
 	public ResponseEntity<Collection<Greeting>> getGreetings() {
 		
-		return new ResponseEntity<Collection<Greeting>>(greetingsService.getAllGreetings(), HttpStatus.OK);
+		return new ResponseEntity<Collection<Greeting>>(greetingsService.findAll(), HttpStatus.OK);
 		
 	}
 	
 	@RequestMapping(value="/api/greetings/{id}")
-	public ResponseEntity<Greeting> getGreeting(@PathVariable BigInteger id) {
-		Greeting g = greetingsService.getGreeting(id);
+	public ResponseEntity<Greeting> getGreeting(@PathVariable Long id) {
+		Greeting g = greetingsService.findOne(id);
 		if (g == null)
 			return new ResponseEntity<Greeting>(HttpStatus.NOT_FOUND);
 		return new ResponseEntity<Greeting>(g, HttpStatus.OK);
@@ -78,7 +74,7 @@ public class GreetingController {
 	@RequestMapping(value="/api/greetings", method = RequestMethod.POST)
 	public ResponseEntity<Greeting> createGreeting(@RequestBody Greeting greeting) {
 		System.out.println("createGreeting called: " + greeting.getGreetingText());
-		Greeting g = greetingsService.createGreeting(greeting);
+		Greeting g = greetingsService.create(greeting);
 		
 		return new ResponseEntity<Greeting>(g, HttpStatus.CREATED);
 		
@@ -89,23 +85,25 @@ public class GreetingController {
 	// Note 2 - Now that we have established the need for {id} it should be a PathVariable and has to be first i.e. before
 	// RequestBody
 	@RequestMapping(value="/api/greetings/{id}", method = RequestMethod.PUT)
-	public ResponseEntity<Greeting> updateGreeting(@PathVariable BigInteger id, @RequestBody Greeting greeting) {
+	public ResponseEntity<Greeting> updateGreeting(@PathVariable Long id, @RequestBody Greeting greeting) {
 		System.out.println("updateGreeting called: " + greeting.getGreetingText());
 		greeting.setId(id);
-		Greeting g = greetingsService.updateGreeting(greeting);
-		if (g == null)
+		Greeting g = greetingsService.update(greeting);
+		System.out.println("In updateGreeting greeting is: " + g);
+		if (g == null) {
 			return new ResponseEntity<Greeting>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 		
 		return new ResponseEntity<Greeting>(g, HttpStatus.OK);
 		
 	}
 	
 	@RequestMapping(value="/api/greetings/{id}", method = RequestMethod.DELETE)
-	public ResponseEntity<Greeting> deleteGreeting(@PathVariable BigInteger id) {
+	public ResponseEntity<Greeting> deleteGreeting(@PathVariable Long id) {
 		
-		Greeting g =  greetingsService.deleteGreeting(id);
-		if (g == null)
-			return new ResponseEntity<Greeting>(HttpStatus.NOT_FOUND);
+		greetingsService.delete(id);
+//		if (g == null)
+//			return new ResponseEntity<Greeting>(HttpStatus.NOT_FOUND);
 		return new ResponseEntity<Greeting>(HttpStatus.OK);
 		
 	}
