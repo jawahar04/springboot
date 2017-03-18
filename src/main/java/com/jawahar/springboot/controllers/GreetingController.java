@@ -12,12 +12,12 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.jawahar.springboot.model.Greeting;
-import com.jawahar.springboot.service.GreetingsService;
+import com.jawahar.springboot.service.GreetingService;
 
 @RestController
 public class GreetingController {
 	@Autowired
-	GreetingsService greetingsService;
+	GreetingService greetingsService;
 	
 //	private static BigInteger nextId;
 //	private static Map<BigInteger, Greeting> greetingMap;

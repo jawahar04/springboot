@@ -11,6 +11,9 @@ import org.hibernate.type.TrueFalseType;
 //import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,7 +23,7 @@ import com.jawahar.springboot.repository.GreetingRepository;
 
 @Service
 @Transactional(propagation=Propagation.SUPPORTS, readOnly = true)
-public class GreetingServiceBean implements GreetingsService {
+public class GreetingServiceBean implements GreetingService {
 	
 //	private static Long nextId;
 //	private static Map<Long, Greeting> greetingMap;
@@ -71,12 +74,14 @@ public class GreetingServiceBean implements GreetingsService {
 	}
 
 	@Override
+	@Cacheable(value = "greetings", key = "#id")
 	public Greeting findOne(Long id) {
 		return greetingRepository.findOne(id);
 	}
 
 	@Override
 	@Transactional(propagation=Propagation.REQUIRES_NEW, readOnly = false)
+	@CachePut(value = "greetings", key = "#result.id")
 	public Greeting create(Greeting greeting) {
 		if (greeting.getId() != null) {
 			System.out.println("Create has to be called with null id");
@@ -92,6 +97,7 @@ public class GreetingServiceBean implements GreetingsService {
 
 	@Override
 	@Transactional(propagation=Propagation.REQUIRES_NEW, readOnly = false)
+	@CachePut(value = "greetings", key = "#greeting.id")
 	public Greeting update(Greeting greeting) {
 		if (greeting.getId() == null) {
 			System.out.println("Update has to be called with non-null id");
@@ -108,9 +114,14 @@ public class GreetingServiceBean implements GreetingsService {
 	}
 
 	@Override
+	@CacheEvict(value = "greetings", key = "#id")
 	public void delete(Long id) {
 		greetingRepository.delete(id);
 	}
 	
+	@Override
+	@CacheEvict(value = "greetings", allEntries = true)
+	public void evictCache() {
+	}
 
 }
