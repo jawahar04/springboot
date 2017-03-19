@@ -15,7 +15,7 @@ public class GreetingBatchBean {
 	@Autowired
 	private GreetingService greetingService;
 	
-	@Scheduled(cron = "0,30 * * * * *")
+	//@Scheduled(cron = "0,30 * * * * *")
 	public void cronJob() {
 		logger.info("> cronJob");
 		

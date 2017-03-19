@@ -1,6 +1,7 @@
 package com.jawahar.springboot.controllers;
 
 import java.util.Collection;
+import java.util.concurrent.Future;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -9,15 +10,25 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.jawahar.springboot.model.Greeting;
+import com.jawahar.springboot.service.EmailService;
 import com.jawahar.springboot.service.GreetingService;
 
 @RestController
 public class GreetingController {
 	@Autowired
 	GreetingService greetingsService;
+	
+	@Autowired
+	EmailService emailService;
+	
+	private Logger logger = LoggerFactory.getLogger(this.getClass());
 	
 //	private static BigInteger nextId;
 //	private static Map<BigInteger, Greeting> greetingMap;
@@ -105,6 +116,39 @@ public class GreetingController {
 //		if (g == null)
 //			return new ResponseEntity<Greeting>(HttpStatus.NOT_FOUND);
 		return new ResponseEntity<Greeting>(HttpStatus.OK);
+		
+	}
+	
+	@RequestMapping(value="/api/greetings/{id}/send", method = RequestMethod.POST)
+	public ResponseEntity<Greeting> sendGreeting(@PathVariable Long id, 
+			@RequestParam(value = "wait", defaultValue = "false") boolean waitForAsyncResult) {
+		logger.info("> GreetingController sendGreeting: " + id);
+		Greeting greeting = null;
+		
+		try {
+			greeting = greetingsService.findOne(id);
+			if (greeting == null) {
+				logger.info("< GreetingController sendGreeting, greeting not found");
+				return new ResponseEntity<Greeting>(HttpStatus.NOT_FOUND);
+			}
+			if (waitForAsyncResult) {
+				Future<Boolean> asyncResponse = emailService.sendAsyncResult(greeting);
+				logger.info("- GreetingController sendAsyncResult greeting email sent");
+				boolean emailSent = asyncResponse.get();
+				logger.info("- GreetingController greeting email sent? {}", emailSent);
+			}
+			else
+				emailService.sendAsync(greeting);
+			
+		}
+		catch (Exception e) {
+			logger.error("A problem occurred while sending a greeting", e);
+			return new ResponseEntity<Greeting>(HttpStatus.NOT_FOUND);
+		}
+		
+		logger.info("< GreetingController sendGreeting");
+		
+		return new ResponseEntity<Greeting>(greeting, HttpStatus.OK);
 		
 	}
 	
