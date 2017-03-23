@@ -81,7 +81,7 @@ public class GreetingServiceBean implements GreetingService {
 
 	@Override
 	@Transactional(propagation=Propagation.REQUIRES_NEW, readOnly = false)
-	@CachePut(value = "greetings", key = "#result.id")
+	@CachePut(value = "greetings", key = "#result.id", condition = "#result != null")
 	public Greeting create(Greeting greeting) {
 		if (greeting.getId() != null) {
 			System.out.println("Create has to be called with null id");
@@ -97,7 +97,7 @@ public class GreetingServiceBean implements GreetingService {
 
 	@Override
 	@Transactional(propagation=Propagation.REQUIRES_NEW, readOnly = false)
-	@CachePut(value = "greetings", key = "#greeting.id")
+	@CachePut(value = "greetings", key = "#greeting.id", condition = "#greeting.id != null")
 	public Greeting update(Greeting greeting) {
 		if (greeting.getId() == null) {
 			System.out.println("Update has to be called with non-null id");

@@ -3,19 +3,21 @@ package com.jawahar.springboot.batch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import com.jawahar.springboot.service.GreetingService;
 
 @Component
+@Profile("batch")
 public class GreetingBatchBean {
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
 	
 	@Autowired
 	private GreetingService greetingService;
 	
-	//@Scheduled(cron = "0,30 * * * * *")
+	@Scheduled(cron = "${batch.greetings.cron}")
 	public void cronJob() {
 		logger.info("> cronJob");
 		
