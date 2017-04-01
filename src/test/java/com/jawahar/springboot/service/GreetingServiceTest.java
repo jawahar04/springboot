@@ -1,16 +1,29 @@
 package com.jawahar.springboot.service;
 
+import static org.junit.Assert.assertEquals;
+//import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertThat;
+
+//import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.Collection;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.jawahar.springboot.AbstractTest;
 import com.jawahar.springboot.model.Greeting;
+
+import ch.qos.logback.core.net.SyslogOutputStream;
 
 @Transactional
 public class GreetingServiceTest extends AbstractTest {
@@ -71,7 +84,7 @@ public class GreetingServiceTest extends AbstractTest {
 	}
 	@Test
 	public void testCreateGreetingFailure() {
-		Long id = 3L;
+		Long id = Long.MAX_VALUE;
 		String greetingText = "Vanakkam";
 				
 		Greeting greeting = new Greeting();
@@ -122,7 +135,83 @@ public class GreetingServiceTest extends AbstractTest {
 		Greeting g = greetingService.update(greeting);
 		
 		Assert.assertNull("failure, greeting expected to be null", g);
-	
-		
 	}
+	@Test
+	public void testUpdateGreetingFailure2() {
+		Long id = Long.MAX_VALUE;
+		String greetingText = " UPDATED";
+			
+		
+		Greeting greeting = new Greeting();
+		greeting.setGreetingText(greetingText);
+		greeting.setId(id); 
+		
+		Greeting g = greetingService.update(greeting);
+		
+		Assert.assertNull("failure, greeting expected to be null", g);
+	}
+	@Test
+	public void testDelete() {
+		Long id = 2L;
+		greetingService.delete(id);
+				
+		Greeting g = greetingService.findOne(id);
+		
+		Assert.assertNull("failure, greeting deleted expected to be null", g);
+	}
+	
+	@Rule
+	public ExpectedException thrown = ExpectedException.none();
+	
+	@Test
+	public void testDeleteFailure() {
+		thrown.expect(org.springframework.dao.EmptyResultDataAccessException.class);
+		Long id = Long.MAX_VALUE;
+		greetingService.delete(id);
+				
+	}
+	
+	// java 8 completeable future --> move to a different test class
+	/*
+	 * Computations can be a Future, Consumer or Runnable --> apply, accept or run
+	 * Computations can run in the current thread, as someAsync or someAsync with an Executor passed in
+	 *
+	 * Creating/completing tasks
+	 * Error handling and exceptions
+	 * canceling and forcing completion
+	 */
+	
+	@Test
+	public void testCompletedFuture() throws Exception {
+		System.out.println(" --- testCompletedFuture ");
+		String expectedVal = "Expected Value";
+		CompletableFuture<String> compFutureString = CompletableFuture.completedFuture(expectedVal);
+		//assertThat(expectedVal, compFutureString.get());
+		
+		assertEquals(expectedVal, compFutureString.get());
+	
+	}
+	private static ExecutorService executor = Executors.newCachedThreadPool();
+	
+	@Test
+	public void testRunAsync() {
+		System.out.println(Thread.currentThread().getName() + " calling testRunAsync");
+		CompletableFuture<Void> compFutureVoid = 
+				CompletableFuture.runAsync(() -> System.out.println(
+						Thread.currentThread().getName() + " In testRunAsync"), executor);
+		pauseSeconds(1);
+		assertEquals(compFutureVoid.isDone(), true);
+	}
+	
+	private void pauseSeconds (int numSecs) {
+		try {
+			Thread.sleep(numSecs * 1000);
+		}
+		catch (InterruptedException e) {
+			System.out.println("Exception in pauseSeconds " + e);
+		}
+	}
+	
+	
+	
 }
