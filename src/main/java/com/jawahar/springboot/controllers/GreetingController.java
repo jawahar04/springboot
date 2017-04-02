@@ -21,7 +21,7 @@ import com.jawahar.springboot.service.EmailService;
 import com.jawahar.springboot.service.GreetingService;
 
 @RestController
-public class GreetingController {
+public class GreetingController extends BaseController {
 	@Autowired
 	GreetingService greetingsService;
 	
