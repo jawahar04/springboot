@@ -20,6 +20,8 @@ public class Application {
         SpringApplication.run(Application.class, args);
     }
     
+    // not needed since we use caffeine
+    
     public CacheManager cacheManager() {
     	//return new ConcurrentMapCacheManager("greetings");
     	return new GuavaCacheManager("greetings");
